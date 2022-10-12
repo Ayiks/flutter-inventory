@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1034552333945",
+    "project_id": "ed-cold-store",
+    "storage_bucket": "ed-cold-store.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034552333945:android:5ff94c2456954e8663e6a8",
+        "android_client_info": {
+          "package_name": "com.example.inventory_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1034552333945-rq4ec5o7q6h0vedar9ntgdu02bbd58ud.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.inventory_1",
+            "certificate_hash": "15fb9e52d88cd577b2bec113199f42efcbfff913"
+          }
+        },
+        {
+          "client_id": "1034552333945-dv1pmi8ki0pafhu3o025a4dfpmb0v273.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCghOroOQM-2uvoEH-BB4lzAXDSRT0yVWY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1034552333945-dv1pmi8ki0pafhu3o025a4dfpmb0v273.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
