@@ -1,167 +1,308 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:inventory_1/utils/dimmension.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/helpers/DBhelper.dart';
+import '../../provider/managers/cart.provider.dart';
+import '../../provider/models/cart.model.dart';
 
 class ConfirmOrder extends StatefulWidget {
-  const ConfirmOrder({super.key});
+  const ConfirmOrder({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ConfirmOrder> createState() => _ConfirmOrderState();
 }
 
 class _ConfirmOrderState extends State<ConfirmOrder> {
-  int _count = 0;
+  DBHelper? dbHelper = DBHelper();
 
-  void _incrementCount() {
-    setState(() {
-      var news = _count++;
-    });
-  }
-
-  void _decrementCount() {
-    setState(() {
-      var news = _count--;
-    });
+  @override
+  void initState() {
+    super.initState();
+    context.read<CartProvider>().getData();
   }
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Confirmation',
-          style: TextStyle(fontSize: Dimensions.font20),
-        ),
         centerTitle: true,
+        title: const Text('My Shopping Cart'),
+        actions: [
+          Badge(
+            badgeContent: Consumer<CartProvider>(
+              builder: (context, value, child) {
+                return Text(
+                  value.getCounter().toString(),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                );
+              },
+            ),
+            position: const BadgePosition(start: 30, bottom: 30),
+            child: IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.shopping_cart),
+            ),
+          ),
+          const SizedBox(
+            width: 20.0,
+          ),
+        ],
       ),
-      body: ListView.separated(
-          itemBuilder: (context, index) {
-            return Container(
-              height: Dimensions.height20 * 4,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                  border: Border(
-                      bottom: BorderSide(
-                          width: Dimensions.width10 / 10, color: Colors.grey))),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Chicken',
-                      style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    Text(
-                      'GHC 20',
-                      style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          '$_count',
-                          style: TextStyle(
-                              fontSize: Dimensions.font16,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          width: Dimensions.width10,
-                        ),
-                        Container(
-                          height: Dimensions.height10 * 4,
-                          width: Dimensions.width20 * 5,
-                          decoration: BoxDecoration(
-                              color: Colors.black12,
-                              borderRadius: BorderRadius.circular(
-                                  Dimensions.radius15 - 5)),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.remove,
-                                  size: Dimensions.iconSize16,
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<CartProvider>(
+              builder: (BuildContext context, provider, widget) {
+                if (provider.cart.isEmpty) {
+                  return const Center(
+                      child: Text(
+                    'Your Cart is Empty',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                  ));
+                } else {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: provider.cart.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          color: Colors.blueGrey.shade200,
+                          elevation: 5.0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                // Image(
+                                //   height: 80,
+                                //   width: 80,
+                                //   image:
+                                //       AssetImage(provider.cart[index].image!),
+                                // ),
+                                SizedBox(
+                                  width: 130,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                        height: 5.0,
+                                      ),
+                                      RichText(
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Name: ',
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${provider.cart[index].productName!}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                      RichText(
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Unit: ',
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${provider.cart[index].quantity!}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                      RichText(
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Price: ' r"$",
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${provider.cart[index].productPrice!}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                onPressed: () => setState(() {
-                                  _count--;
-                                }),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.add,
-                                  size: Dimensions.iconSize16,
-                                ),
-                                onPressed: () => setState(() {
-                                  _count++;
-                                }),
-                              ),
-                            ],
+                                ValueListenableBuilder<int>(
+                                    valueListenable:
+                                        provider.cart[index].quantity!,
+                                    builder: (context, val, child) {
+                                      return PlusMinusButtons(
+                                        addQuantity: () {
+                                          cart.addQuantity(
+                                              provider.cart[index].id!);
+                                          dbHelper!
+                                              .updateQuantity(Cart(
+                                                  id: index,
+                                                  productId: index.toString(),
+                                                  productName: provider
+                                                      .cart[index].productName,
+                                                  initialPrice: provider
+                                                      .cart[index].initialPrice,
+                                                  productPrice: provider
+                                                      .cart[index].productPrice,
+                                                  quantity: ValueNotifier(
+                                                      provider.cart[index]
+                                                          .quantity!.value),
+                                                  qntyInstock: provider
+                                                      .cart[index].qntyInstock,
+                                                  image: provider
+                                                      .cart[index].image))
+                                              .then((value) {
+                                            setState(() {
+                                              cart.addTotalPrice(double.parse(
+                                                  provider
+                                                      .cart[index].productPrice
+                                                      .toString()));
+                                            });
+                                          });
+                                        },
+                                        deleteQuantity: () {
+                                          cart.deleteQuantity(
+                                              provider.cart[index].id!);
+                                          cart.removeTotalPrice(double.parse(
+                                              provider.cart[index].productPrice
+                                                  .toString()));
+                                        },
+                                        text: val.toString(),
+                                      );
+                                    }),
+                                IconButton(
+                                    onPressed: () {
+                                      dbHelper!.deleteCartItem(
+                                          provider.cart[index].id!);
+                                      provider
+                                          .removeItem(provider.cart[index].id!);
+                                      provider.removeCounter();
+                                    },
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: Colors.red.shade800,
+                                    )),
+                              ],
+                            ),
                           ),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            );
-          },
-          separatorBuilder: ((context, index) {
-            return SizedBox(
-              height: Dimensions.height10,
-            );
-          }),
-          itemCount: 5),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-            border: Border(top: BorderSide(width: Dimensions.width10 / 10))),
-        height: Dimensions.height20 * 4,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: Dimensions.width10, vertical: Dimensions.height10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+                        );
+                      });
+                }
+              },
+            ),
+          ),
+          Consumer<CartProvider>(
+            builder: (BuildContext context, value, Widget? child) {
+              final ValueNotifier<int?> totalPrice = ValueNotifier(null);
+              for (var element in value.cart) {
+                totalPrice.value =
+                    (element.productPrice! * element.quantity!.value) +
+                        (totalPrice.value ?? 0);
+              }
+              return Column(
                 children: [
-                  Text(
-                    'Total Cost',
-                    style: TextStyle(fontSize: Dimensions.font16),
-                  ),
-                  SizedBox(
-                    height: Dimensions.height10,
-                  ),
-                  Text(
-                    'GHC 13.50',
-                    style: TextStyle(
-                        fontSize: Dimensions.font16,
-                        fontWeight: FontWeight.w600),
-                  )
+                  ValueListenableBuilder<int?>(
+                      valueListenable: totalPrice,
+                      builder: (context, val, child) {
+                        return ReusableWidget(
+                            title: 'Sub-Total',
+                            value: r'$' + (val?.toStringAsFixed(2) ?? '0'));
+                      }),
                 ],
-              ),
-              Container(
-                height: Dimensions.height20 * 2.5,
-                width: Dimensions.width20 * 8,
-                decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 13, 71, 118),
-                    borderRadius:
-                        BorderRadius.circular(Dimensions.radius15 - 5)),
-                child: Center(
-                    child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Dimensions.width10),
-                  child: Text(
-                    'CONFIRM SALES',
-                    style: TextStyle(
-                        fontSize: Dimensions.font16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600),
-                  ),
-                )),
-              )
-            ],
+              );
+            },
+          )
+        ],
+      ),
+      bottomNavigationBar: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment Successful'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+        child: Container(
+          color: Colors.yellow.shade600,
+          alignment: Alignment.center,
+          height: 50.0,
+          child: const Text(
+            'Proceed to Pay',
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class PlusMinusButtons extends StatelessWidget {
+  final VoidCallback deleteQuantity;
+  final VoidCallback addQuantity;
+  final String text;
+  const PlusMinusButtons(
+      {Key? key,
+      required this.addQuantity,
+      required this.deleteQuantity,
+      required this.text})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(onPressed: deleteQuantity, icon: const Icon(Icons.remove)),
+        Text(text),
+        IconButton(onPressed: addQuantity, icon: const Icon(Icons.add)),
+      ],
+    );
+  }
+}
+
+class ReusableWidget extends StatelessWidget {
+  final String title, value;
+  const ReusableWidget({Key? key, required this.title, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
+          Text(
+            value.toString(),
+            style: Theme.of(context).textTheme.subtitle2,
+          ),
+        ],
       ),
     );
   }

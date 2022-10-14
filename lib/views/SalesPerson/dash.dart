@@ -1,9 +1,15 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_1/controllers/product_controller.dart';
 import 'package:inventory_1/views/SalesPerson/confirm_order.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:provider/provider.dart';
 
+import '../../provider/data/items.dart';
+import '../../provider/helpers/DBhelper.dart';
+import '../../provider/managers/cart.provider.dart';
+import '../../provider/models/cart.model.dart';
 import '../../utils/dimmension.dart';
 
 class Dash extends StatefulWidget {
@@ -28,214 +34,153 @@ class _DashState extends State<Dash> {
     });
   }
 
+  DBHelper dbHelper = DBHelper();
+
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    void saveData(int index) {
+      dbHelper
+          .insert(
+        Cart(
+          id: index,
+          productId: index.toString(),
+          productName: products[index].name,
+          initialPrice: products[index].price,
+          productPrice: products[index].price,
+          quantity: ValueNotifier(1),
+          qntyInstock: products[index].quantity,
+          image: products[index].image,
+        ),
+      )
+          .then((value) {
+        cart.addTotalPrice(products[index].price.toDouble());
+        cart.addCounter();
+        print('Product Added to cart');
+      }).onError((error, stackTrace) {
+        print(error.toString());
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Dashboard',
-          style: TextStyle(fontSize: Dimensions.font26 - 2),
-        ),
         centerTitle: true,
+        title: const Text('Product List'),
+        actions: [
+          Badge(
+            badgeContent: Consumer<CartProvider>(
+              builder: (context, value, child) {
+                return Text(
+                  value.getCounter().toString(),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                );
+              },
+            ),
+            position: const BadgePosition(start: 30, bottom: 30),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ConfirmOrder()));
+              },
+              icon: const Icon(Icons.shopping_cart),
+            ),
+          ),
+          const SizedBox(
+            width: 20.0,
+          ),
+        ],
       ),
-      body: GetBuilder<ProductController>(builder: (product) {
-        print(product.productList.length);
-        return ListView.separated(
-            padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.width10, vertical: Dimensions.height10),
-            itemBuilder: (context, index) {
-              var products = product.productList[index];
-              return GestureDetector(
-                onTap: () {
-                  showBarModalBottomSheet(
-                      context: context,
-                      builder: (context) {
-                        return StatefulBuilder(builder: ((context, setState) {
-                          return Container(
-                              height: Dimensions.height30 * 8,
-                              width: double.infinity,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: Dimensions.width20,
-                                    vertical: Dimensions.height20),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      height: Dimensions.height20 * 4,
-                                      decoration: BoxDecoration(
-                                          border: Border(
-                                              bottom: BorderSide(
-                                                  width: Dimensions.width10 /
-                                                      10))),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Chicken Thigh',
-                                            style: TextStyle(
-                                                fontSize: Dimensions.font16,
-                                                fontWeight: FontWeight.w600),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                '$_count',
-                                                style: TextStyle(
-                                                    fontSize: Dimensions.font16,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              SizedBox(
-                                                width: Dimensions.width10,
-                                              ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    color: Colors.black12,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            Dimensions
-                                                                    .radius15 -
-                                                                5)),
-                                                child: Row(
-                                                  children: [
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.remove,
-                                                        size: Dimensions
-                                                            .iconSize24,
-                                                      ),
-                                                      onPressed: () =>
-                                                          setState(() {
-                                                        _count--;
-                                                      }),
-                                                    ),
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.add,
-                                                        size: Dimensions
-                                                            .iconSize24,
-                                                      ),
-                                                      onPressed: () =>
-                                                          setState(() {
-                                                        _count++;
-                                                      }),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: Dimensions.height20,
-                                    ),
-                                    Container(
-                                      height: Dimensions.height20 * 4,
-                                      decoration: BoxDecoration(
-                                          border: Border(
-                                              bottom: BorderSide(
-                                                  width: Dimensions.width10 /
-                                                      10))),
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: Dimensions.height20),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Total',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          Dimensions.font16),
-                                                ),
-                                                SizedBox(
-                                                  width: Dimensions.width10,
-                                                ),
-                                                Text(
-                                                  'GHC 20',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          Dimensions.font16,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                            Container(
-                                              height: Dimensions.height20 * 2,
-                                              width: Dimensions.width30 * 5,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          Dimensions.radius15 -
-                                                              5)),
-                                              child: Center(
-                                                child: Text(
-                                                  'ADD TO ORDER',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          Dimensions.font16,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ));
-                        }));
-                      });
-                },
-                child: Container(
-                  height: Dimensions.height20 * 4,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              width: Dimensions.width10 / 10,
-                              color: Colors.grey))),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Chicken',
-                          style: TextStyle(
-                              fontSize: Dimensions.font16,
-                              fontWeight: FontWeight.w400),
-                        ),
-                        Text(
-                          'GHC 20',
-                          style: TextStyle(
-                              fontSize: Dimensions.font16,
-                              fontWeight: FontWeight.bold),
-                        )
-                      ],
+      body: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+          shrinkWrap: true,
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            return Card(
+              color: Colors.blueGrey.shade200,
+              elevation: 5.0,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    // Image(
+                    //   height: 80,
+                    //   width: 80,
+                    //   image: AssetImage(products[index].image.toString()),
+                    // ),
+                    SizedBox(
+                      width: 130,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            height: 5.0,
+                          ),
+                          RichText(
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            text: TextSpan(
+                                text: 'Name: ',
+                                style: TextStyle(
+                                    color: Colors.blueGrey.shade800,
+                                    fontSize: 16.0),
+                                children: [
+                                  TextSpan(
+                                      text:
+                                          '${products[index].name.toString()}\n',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ]),
+                          ),
+                          RichText(
+                            maxLines: 1,
+                            text: TextSpan(
+                                text: 'Unit: ',
+                                style: TextStyle(
+                                    color: Colors.blueGrey.shade800,
+                                    fontSize: 16.0),
+                                children: [
+                                  TextSpan(
+                                      text:
+                                          '${products[index].quantity.toString()}\n',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ]),
+                          ),
+                          RichText(
+                            maxLines: 1,
+                            text: TextSpan(
+                                text: 'Price: ' r"$",
+                                style: TextStyle(
+                                    color: Colors.blueGrey.shade800,
+                                    fontSize: 16.0),
+                                children: [
+                                  TextSpan(
+                                      text:
+                                          '${products[index].price.toString()}\n',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ]),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            primary: Colors.blueGrey.shade900),
+                        onPressed: () {
+                          saveData(index);
+                        },
+                        child: const Text('Add to Cart')),
+                  ],
                 ),
-              );
-            },
-            separatorBuilder: (BuildContext int, index) {
-              return Divider(
-                height: Dimensions.height10,
-              );
-            },
-            itemCount: product.productList.length);
-      }),
+              ),
+            );
+          }),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(
             vertical: Dimensions.height20, horizontal: Dimensions.width30),
